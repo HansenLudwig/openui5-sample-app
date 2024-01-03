@@ -13,6 +13,21 @@ A deployed version of the [openui5-sample-app](http://sap.github.io/openui5-samp
     - For installation instructions please see: [Installing the UI5 CLI](https://github.com/SAP/ui5-tooling#installing-the-ui5-cli).
 
 ## Getting started
+### If you just installed Node.js to a new computer:
+1. Do installs in cmd:
+    ```sh
+    npm install -g yo
+    npm install -g generator-easy-ui5
+    npm install --global @ui5/cli
+    ```
+1. You may need to change a Setting of your Win Env:
+    Win+X, A: Open a Windows PowerShell and input:
+    ```sh
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+    ```
+    input 'y' to confirm.
+
+### Then
 1. Clone this repository and navigate into it
     ```sh
     git clone https://github.com/SAP/openui5-sample-app.git

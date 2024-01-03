@@ -1,32 +1,49 @@
 {
-	"name": "openui5-sample-app",
-	"version": "0.4.0",
-	"description": "Sample of an OpenUI5 app",
-	"private": true,
-	"engines": {
-		"node": ">=18.14.0",
-		"npm": ">=9"
-	},
-	"scripts": {
-		"start": "ui5 serve",
-		"lint": "eslint webapp",
-		"karma": "karma start",
-		"karma-ci": "rimraf coverage && karma start karma-ci.conf.js",
-		"watch": "npm run karma",
-		"test": "npm run lint && npm run karma-ci",
-		"build": "ui5 build -a --clean-dest",
-		"build-self-contained": "ui5 build self-contained -a --clean-dest",
-		"serve-dist": "ws --compress -d dist"
-	},
-	"devDependencies": {
-		"@ui5/cli": "^3.8.0",
-		"@ui5/middleware-code-coverage": "^1.1.1",
-		"eslint": "^8.55.0",
-		"karma": "^6.4.2",
-		"karma-chrome-launcher": "^3.2.0",
-		"karma-coverage": "^2.2.1",
-		"karma-ui5": "^3.0.4",
-		"local-web-server": "^5.3.0",
-		"rimraf": "^5.0.5"
-	}
+  "name": "sap.ui.demo.todo",
+  "version": "0.0.1",
+  "description": "Sample of an OpenUI5 app",
+  "private": true,
+  "engines": {
+    "node": ">=18.14.0",
+    "npm": ">=9"
+  },
+  "scripts": {
+    "lint": "eslint webapp",
+    "karma": "karma start",
+    "karma-ci": "rimraf coverage && karma start karma-ci.conf.js",
+    "watch": "npm run karma",
+    "test": "npm run lint && npm run karma-ci",
+    "build-self-contained": "ui5 build self-contained -a --clean-dest",
+    "serve-dist": "ws --compress -d dist",
+    "start_old": "ui5 serve",
+    "build_old": "ui5 build -a --clean-dest",
+    "start": "fiori run --open \"test/flpSandbox.html?sap-ui-xx-viewCache=false#app-tile\"",
+    "start-noflp": "fiori run --open \"index.html?sap-ui-xx-viewCache=false\"",
+    "start-variants-management": "fiori run --open \"preview.html?sap-ui-xx-viewCache=false&fiori-tools-rta-mode=true&sap-ui-rta-skip-flex-validation=true#preview-app\"",
+    "build": "ui5 build -a --clean-dest --include-task=generateCachebusterInfo",
+    "deploy": "fiori verify",
+    "deploy-config": "fiori add deploy-config",
+    "suite-tests": "fiori run --open 'test/testsuite.qunit.html'",
+    "unit-tests": "fiori run --open 'test/unit/unitTests.qunit.html'",
+    "int-tests": "fiori run --open 'test/integration/opaTests.qunit.html'"
+  },
+  "devDependencies": {
+    "@ui5/middleware-code-coverage": "^1.1.1",
+    "eslint": "^8.55.0",
+    "karma": "^6.4.2",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-ui5": "^3.0.4",
+    "local-web-server": "^5.3.0",
+    "@ui5/cli": "^3.0.0",
+    "@sap/ux-ui5-tooling": "1",
+    "rimraf": "3.0.2"
+  },
+  "sapuxLayer": "CUSTOMER_BASE",
+  "keywords": [
+    "ui5",
+    "openui5",
+    "sapui5"
+  ],
+  "main": "webapp/index.html"
 }
