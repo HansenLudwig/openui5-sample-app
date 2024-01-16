@@ -24,7 +24,7 @@
 				"type": "sap.ui.model.resource.ResourceModel",
 				"settings": {
 					"bundleName": "sap.ui.demo.todo.i18n.i18n",
-					"supportedLocales": ["en", "de"],
+					"supportedLocales": ["en", "de", "zh"],
 					"fallbackLocale": "en"
 				}
 			},

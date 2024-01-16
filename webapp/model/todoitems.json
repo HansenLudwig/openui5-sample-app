@@ -2,11 +2,15 @@
 	"newTodo": "",
 	"todos": [{
 			"title": "Start this app",
-			"completed": true
+			"completed": true,
+			"priority": "Top",
+			"addedAtUTC": "2023-12-17T00:00:00.000Z"
 		},
 		{
 			"title": "Learn OpenUI5",
-			"completed": false
+			"completed": false,
+			"priority": "High",
+			"addedAtUTC": "2023-12-19T00:00:00.000Z"
 		}
 	],
 	"itemsRemovable": true,

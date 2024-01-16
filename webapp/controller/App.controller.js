@@ -26,9 +26,15 @@ sap.ui.define([
 			const oModel = this.getView().getModel();
 			const aTodos = oModel.getProperty("/todos").map((oTodo) => Object.assign({}, oTodo));
 
+			let DateofAddedUTC = new Date().toJSON()
+			//'2024-1-16T03:29:42Z'
+
 			aTodos.push({
 				title: oModel.getProperty("/newTodo"),
-				completed: false
+				completed: false,
+				priority: "Normal(Default)",
+				addedAtUTC: DateofAddedUTC,
+				addedAt: Date(DateofAddedUTC)
 			});
 
 			oModel.setProperty("/todos", aTodos);

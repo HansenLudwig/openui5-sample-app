@@ -12,7 +12,6 @@
 							</f:DynamicPageHeader>
 						</f:header>
 						<f:content>
-
 							<List id="todoList"
 								items="{ path: '/todos', events: { change: '.updateItemsLeftCount' } }"
 								mode="None"
@@ -47,13 +46,16 @@
 										<VBox justifyContent="Center">
 											<Text text="{title}"/>
 										</VBox>
+										<VBox justifyContent="Center">
+											<Text text="priority: {priority}; "/>
+											<Text text="Added at: {addedAtUTC}; "/>
+										</VBox>
 									</HBox>
 									<customData>
 										<core:CustomData key="todo-item-completed" value="{= String(${completed})}" writeToDom="true" />
 									</customData>
 								</CustomListItem>
 							</List>
-
 						</f:content>
 					</f:DynamicPage>
 				</content>
