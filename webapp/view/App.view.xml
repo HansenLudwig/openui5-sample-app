@@ -34,7 +34,7 @@
 											style: 'short'
 										}
 								}" 
-								class="sapUiSmallMarginBottom"/>
+								class="sapUiSmallMarginEnd"/>
 							</FlexBox>
 							<!--  Input: ("What needs to be done?") -->
 							<Input class="todoInput" id="addTodoItemInput" value="{/newTodo}"
