@@ -2,3 +2,16 @@
 li[data-todo-item-completed="true"] span {
 	text-decoration: line-through;
 }
+
+div.CustomListItemPriority span {
+	font-weight: bold;
+}
+  /* A failed try on setting color of Top-Priority to 'Red'*/
+div.CustomListItemPriority span:contains('Top') {
+	color:red
+}
+
+
+div.CustomListItemTitle span {
+	font-weight: bold;
+}

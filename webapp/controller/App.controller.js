@@ -3,20 +3,60 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
-	"sap/ui/model/json/JSONModel"
-], (Device, Controller, Filter, FilterOperator, JSONModel) => {
+	"sap/ui/model/json/JSONModel",
+	"sap/ui/unified/DateTypeRange",	//
+	"sap/ui/core/date/UI5Date"		//
+], (Device, Controller, Filter, FilterOperator, JSONModel, DateTypeRange, UI5Date) => {
 	"use strict";
 
 	return Controller.extend("sap.ui.demo.todo.controller.App", {
 
 		onInit() {
+
+			let oModel = new JSONModel();
+			
+			let oOptions = {
+				"SelectedOption": "Normal(Default)",
+				"OptionCollection": [
+					{
+						"PriorityID": "5",
+						"PriName": "Top",
+						"Icon": "sap-icon://add-product"
+					},
+					{
+						"PriorityID": "4",
+						"PriName": "High",
+						"Icon": "sap-icon://add-product"
+					},
+					{
+						"PriorityID": "3",
+						"PriName": "Normal(Default)",
+						"Icon": "sap-icon://add-product"
+					},
+					{
+						"PriorityID": "2",
+						"PriName": "Low",
+						"Icon": "sap-icon://add-product"
+					},
+					{
+						"PriorityID": "1",
+						"PriName": "Very Low",
+						"Icon": "sap-icon://add-product"
+					}
+				]
+			};
+
 			this.aSearchFilters = [];
 			this.aTabFilters = [];
 
-			this.getView().setModel(new JSONModel({
+			oModel.setData({
 				isMobile: Device.browser.mobile,
+				selectOptions: oOptions,
+				valueDP1: UI5Date.getInstance(),
 				filterText: undefined
-			}), "view");
+			});
+
+			this.getView().setModel(oModel, "view");
 		},
 
 		/**
@@ -24,15 +64,24 @@ sap.ui.define([
 		 */
 		addTodo() {
 			const oModel = this.getView().getModel();
+			if(!oModel.getProperty("/newTodo"))
+			{
+				return
+			}
+			
 			const aTodos = oModel.getProperty("/todos").map((oTodo) => Object.assign({}, oTodo));
 
 			let DateofAddedUTC = new Date().toJSON()
 			//'2024-1-16T03:29:42Z'
 
+			// Hansen:
+			// todo: add: Seleciton of priority:["Top", "High", "Normal(Default)", "Low", "Very Low"]
+			// todo: fix the problem of Date(UTC...)
 			aTodos.push({
 				title: oModel.getProperty("/newTodo"),
 				completed: false,
 				priority: "Normal(Default)",
+				//DDLAtUTC: DDLAtUTC,
 				addedAtUTC: DateofAddedUTC,
 				addedAt: Date(DateofAddedUTC)
 			});
@@ -76,6 +125,8 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent Input changed event
 		 */
 		onSearch(oEvent) {
+			// Hansen:
+			// To-do: Add search on HashTag, by starting with "#".
 			const oModel = this.getView().getModel();
 
 			// First reset current filters
