@@ -77,8 +77,16 @@ sap.ui.define([
 			// Hansen:
 			// todo: add: Seleciton of priority:["Top", "High", "Normal(Default)", "Low", "Very Low"]
 			// todo: fix the problem of Date(UTC...)
+			const newTodo = oModel.getProperty("/newTodo")
+			let newTodoHashTagIdx = String(newTodo).search("#")
+			if(newTodoHashTagIdx === -1) {
+				newTodoHashTagIdx = String(newTodo).length
+			}
+			let newTodoTitle = newTodo.substring(0, newTodoHashTagIdx)
+			let newTodoHashTag = newTodo.substring(newTodoHashTagIdx)
 			aTodos.push({
-				title: oModel.getProperty("/newTodo"),
+				title: newTodoTitle,
+				hashTag: newTodoHashTag,
 				completed: false,
 				priority: "Normal(Default)",
 				//DDLAtUTC: DDLAtUTC,
@@ -119,7 +127,22 @@ sap.ui.define([
 
 			oModel.setProperty("/itemsLeftCount", iItemsLeft);
 		},
+		pressOnHashTag(oEvent) {
+			const SearchHashTag = oEvent.getSource().mProperties.text.substring(1)
 
+			const oModel = this.getView().getModel();
+			// First reset current filters
+			this.aSearchFilters = [];
+			if (SearchHashTag && SearchHashTag.length > 0) {
+				oModel.setProperty("/itemsRemovable", false);
+				const filter = new Filter("hashTag", FilterOperator.Contains, SearchHashTag);
+				this.aSearchFilters.push(filter);
+			} else {
+				oModel.setProperty("/itemsRemovable", true);
+			}
+
+			this._applyListFilters();
+		},
 		/**
 		 * Trigger search for specific items. The removal of items is disable as long as the search is used.
 		 * @param {sap.ui.base.Event} oEvent Input changed event

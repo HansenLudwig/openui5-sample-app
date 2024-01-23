@@ -104,6 +104,9 @@
 										class="CustomListItemTitle"
 										width="60%">
 										<Text text="{title}" />
+										<Link
+											text="{hashTag}"
+											press="pressOnHashTag"/>
 									</VBox>
 									<VBox justifyContent="Center">
 										<Text text="Added at: {addedAtUTC} " />

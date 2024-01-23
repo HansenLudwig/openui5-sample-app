@@ -2,6 +2,7 @@
 	"newTodo": "",
 	"todos": [{
 			"title": "Start this app",
+			"hashTag": "#ABC",
 			"completed": true,
 			"priority": "Top",
 			"DDLAtUTC": "2023-12-20T00:00:00.000Z",
@@ -9,6 +10,7 @@
 		},
 		{
 			"title": "Learn OpenUI5",
+			"hashTag": "#UI5",
 			"completed": false,
 			"priority": "High",
 			"DDLAtUTC": "2024-01-25T00:00:00.000Z",
