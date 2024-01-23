@@ -1,79 +1,141 @@
-<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:f="sap.f" controllerName="sap.ui.demo.todo.controller.App" displayBlock="true">
-		<App>
-			<Page>
-				<customHeader>
-					<f:ShellBar core:require="{ Helper: 'sap/ui/demo/todo/util/Helper' }" title="{i18n>TITLE}" homeIcon="{:= Helper.resolvePath('./img/logo_ui5.png') }" />
-				</customHeader>
-				<content>
-					<f:DynamicPage>
-						<f:header>
-							<f:DynamicPageHeader pinnable="false">
-								<Input class="todoInput" id="addTodoItemInput" value="{/newTodo}" placeholder="{i18n>INPUT_PLACEHOLDER}" change=".addTodo" />
-							</f:DynamicPageHeader>
-						</f:header>
-						<f:content>
-							<List id="todoList"
-								items="{ path: '/todos', events: { change: '.updateItemsLeftCount' } }"
-								mode="None"
-								growing="true"
-								growingScrollToLoad="true"
-								showNoData="false"
-								showSeparators="None">
-								<headerToolbar>
-									<OverflowToolbar id="toolbar" class="sapUiSizeCompact" visible="{= !${view>/isMobile} }">
-										<ToolbarSpacer />
-										<SearchField id="searchTodoItemsInput" liveChange=".onSearch" width="20rem"/>
-										<SegmentedButton selectedKey="all" selectionChange=".onFilter" class="sapMSegmentedButtonNoAutoWidth">
-											<items>
-												<SegmentedButtonItem text="{i18n>LABEL_ALL}" key="all"/>
-												<SegmentedButtonItem text="{i18n>LABEL_ACTIVE}" key="active"/>
-												<SegmentedButtonItem text="{i18n>LABEL_COMPLETED}" key="completed"/>
-											</items>
-										</SegmentedButton>
-										<Button id="clearCompleted" enabled="{/itemsRemovable}" icon="sap-icon://delete" text="{i18n>CLEAR_COMPLETED}" press=".clearCompleted"/>
-									</OverflowToolbar>
-								</headerToolbar>
-								<infoToolbar>
-									<OverflowToolbar
-										visible="{= !!${view>/filterText} }"
-										active="false">
-										<Label text="{view>/filterText}" />
-									</OverflowToolbar>
-								</infoToolbar>
-								<CustomListItem>
-									<HBox>
-										<CheckBox selected="{completed}"  />
-										<VBox justifyContent="Center">
-											<Text text="{title}"/>
-										</VBox>
-										<VBox justifyContent="Center">
-											<Text text="priority: {priority}; "/>
-											<Text text="Added at: {addedAtUTC}; "/>
-										</VBox>
-									</HBox>
-									<customData>
-										<core:CustomData key="todo-item-completed" value="{= String(${completed})}" writeToDom="true" />
-									</customData>
-								</CustomListItem>
-							</List>
-						</f:content>
-					</f:DynamicPage>
-				</content>
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns="sap.m" xmlns:f="sap.f"
+	controllerName="sap.ui.demo.todo.controller.App" displayBlock="true">
+	<App>
+		<Page>
+			<!--  Icon, "todos" -->
+			<customHeader>
+				<f:ShellBar core:require="{ Helper: 'sap/ui/demo/todo/util/Helper' }"
+					title="{i18n>TITLE}" homeIcon="{:= Helper.resolvePath('./img/logo_ui5.png') }" />
+			</customHeader>
 
-				<footer>
-					<OverflowToolbar id="toolbar-footer" visible="{= !!${view>/isMobile} }">
-						<SegmentedButton selectedKey="all" selectionChange=".onFilter" class="sapMSegmentedButtonNoAutoWidth">
-							<items>
-								<SegmentedButtonItem text="All" key="all"/>
-								<SegmentedButtonItem text="Active" key="active"/>
-								<SegmentedButtonItem text="Completed" key="completed"/>
-							</items>
-						</SegmentedButton>
-						<ToolbarSpacer />
-						<Button id="clearCompleted-footer" enabled="{/itemsRemovable}" icon="sap-icon://delete" text="{i18n>CLEAR_COMPLETED}" press=".clearCompleted"/>
-					</OverflowToolbar>
-				</footer>
+			<content>
+				<f:DynamicPage>
+					<f:header>
+						<f:DynamicPageHeader pinnable="false">
+							<FlexBox renderType="Div" alignItems="Center" justifyContent="Start">
+								<!-- Not Working :( -->
+								<Select class="todoPriority" id="addTodoItemPriority" 
+									forceSelection="false"
+									selectedKey="{view>/selectOptions/SelectedOption}"
+									items="{ 
+										path: 'view>/selectOptions/OptionCollection',
+										sorter: { path: 'PriorityID' } 
+									}">
+									<core:ListItem key="{PriorityID}" text="{PriName}" icon="{Icon}"
+									class="sapUiSmallMarginEnd"/>
+								</Select>
+								
+								<Text text="DDL: " text-align="center" class="sapUiSmallMarginEnd"/>
+								<DatePicker id='DP1'
+									value="{
+										path:'view>/valueDP1',
+										type: 'sap.ui.model.type.Date',
+										formationOptions:{
+											style: 'short'
+										}
+								}" 
+								class="sapUiSmallMarginEnd"/>
+							</FlexBox>
+							<!--  Input: ("What needs to be done?") -->
+							<Input class="todoInput" id="addTodoItemInput" value="{/newTodo}"
+								placeholder="{i18n>INPUT_PLACEHOLDER}" change=".addTodo" />
+							<Button id="addTodoItemButton"
+								Icon="sap-icon://add-product" text="{i18n>ADD_NEW_TODO_BUTT}"
+								press=".addTodo"/>
+						</f:DynamicPageHeader>
+					</f:header>
 
-			</Page>
-		</App>
+					<f:content>
+						<List 
+							id="todoList"
+							headerText="{i18n>todoListTitle}"
+							noDataText="{i18n>NO_ITEMS}"
+							items="{ path: '/todos', events: { change: '.updateItemsLeftCount' } }"
+							mode="None"
+							growing="true"
+							growingScrollToLoad="true"
+							showNoData="false"
+							showSeparators="None">
+
+							<!-- 功能栏 -->
+							<headerToolbar>
+								<OverflowToolbar id="toolbar" class="sapUiSizeCompact"
+									visible="{= !${view>/isMobile} }">
+									<Title text="{i18n>todoListTitle}"/>
+									<ToolbarSpacer/>
+									<SearchField id="searchTodoItemsInput" liveChange=".onSearch"
+										width="20rem" />
+									<SegmentedButton selectedKey="all" selectionChange=".onFilter"
+										class="sapMSegmentedButtonNoAutoWidth">
+										<items>
+											<SegmentedButtonItem text="{i18n>LABEL_ALL}" key="all" />
+											<SegmentedButtonItem text="{i18n>LABEL_ACTIVE}" key="active" />
+											<SegmentedButtonItem text="{i18n>LABEL_COMPLETED}" key="completed" />
+										</items>
+									</SegmentedButton>
+
+									<Button id="clearCompleted" enabled="{/itemsRemovable}"
+										icon="sap-icon://delete" text="{i18n>CLEAR_COMPLETED}"
+										press=".clearCompleted" />
+								</OverflowToolbar>
+							</headerToolbar>
+							
+							<!-- 内容栏（表格） -->
+							<infoToolbar>
+								<OverflowToolbar
+									visible="{= !!${view>/filterText} }"
+									active="false">
+									<Label text="{view>/filterText}" />
+								</OverflowToolbar>
+							</infoToolbar>
+
+							<CustomListItem>
+								<HBox>
+									<CheckBox selected="{completed}" />
+									<VBox justifyContent="Center"
+										class="CustomListItemPriority"
+									>
+										<Text
+											text="{priority}"
+											text-align="center"
+											width="63px"/>
+									</VBox>
+									<VBox justifyContent="Center"
+										class="CustomListItemTitle"
+										width="60%">
+										<Text text="{title}" />
+									</VBox>
+									<VBox justifyContent="Center">
+										<Text text="Added at: {addedAtUTC} " />
+									</VBox>
+								</HBox>
+								<customData>
+									<core:CustomData key="todo-item-completed"
+										value="{= String(${completed})}" writeToDom="true" />
+								</customData>
+							</CustomListItem>
+						</List>
+					</f:content>
+				</f:DynamicPage>
+			</content>
+
+			<footer>
+				<OverflowToolbar id="toolbar-footer" visible="{= !!${view>/isMobile} }">
+					<SegmentedButton selectedKey="all" selectionChange=".onFilter"
+						class="sapMSegmentedButtonNoAutoWidth">
+						<items>
+							<SegmentedButtonItem text="All" key="all" />
+							<SegmentedButtonItem text="Active" key="active" />
+							<SegmentedButtonItem text="Completed" key="completed" />
+						</items>
+					</SegmentedButton>
+					<ToolbarSpacer />
+					<Button id="clearCompleted-footer" enabled="{/itemsRemovable}"
+						icon="sap-icon://delete" text="{i18n>CLEAR_COMPLETED}"
+						press=".clearCompleted" />
+				</OverflowToolbar>
+			</footer>
+
+		</Page>
+	</App>
 </mvc:View>
