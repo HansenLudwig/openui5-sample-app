@@ -1,5 +1,8 @@
 {
-	"newTodo": "",
+	"newTodo":{
+		"title":"defaultTest",
+		"priority": "3"
+	},
 	"todos": [{
 			"title": "Start this app",
 			"hashTag": "#ABC",

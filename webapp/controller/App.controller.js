@@ -57,6 +57,7 @@ sap.ui.define([
 			});
 
 			this.getView().setModel(oModel, "view");
+			// should do it on component level.
 		},
 
 		/**
@@ -132,13 +133,18 @@ sap.ui.define([
 
 			const oModel = this.getView().getModel();
 			// First reset current filters
-			this.aSearchFilters = [];
-			if (SearchHashTag && SearchHashTag.length > 0) {
-				oModel.setProperty("/itemsRemovable", false);
-				const filter = new Filter("hashTag", FilterOperator.Contains, SearchHashTag);
-				this.aSearchFilters.push(filter);
-			} else {
-				oModel.setProperty("/itemsRemovable", true);
+			if(this.aSearchFilters.length){
+				this.aSearchFilters = [];
+			}
+			else {
+				this.aSearchFilters = [];
+				if (SearchHashTag && SearchHashTag.length > 0) {
+					oModel.setProperty("/itemsRemovable", false);
+					const filter = new Filter("hashTag", FilterOperator.Contains, SearchHashTag);
+					this.aSearchFilters.push(filter);
+				} else {
+					oModel.setProperty("/itemsRemovable", true);
+				}
 			}
 
 			this._applyListFilters();
