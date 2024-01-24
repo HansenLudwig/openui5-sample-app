@@ -1,13 +1,28 @@
 {
-	"newTodo":{
-		"title":"defaultTest",
-		"priority": "3"
+	"default_newTodo":
+	{
+		"title": "defaultTest",
+		"hashTag": "",
+		"completed": false,
+		"priority": "3",
+		"DDLAtUTC": "",
+		"addedAtUTC": ""
 	},
-	"todos": [{
+	"newTodo":{
+		"title": "defaultTest",
+		"hashTag": "",
+		"completed": false,
+		"priority": "3",
+		"DDLAtUTC": "",
+		"addedAtUTC": ""
+		
+	},
+	"todos": [
+		{
 			"title": "Start this app",
 			"hashTag": "#ABC",
 			"completed": true,
-			"priority": "Top",
+			"priority": "6",
 			"DDLAtUTC": "2023-12-20T00:00:00.000Z",
 			"addedAtUTC": "2023-12-17T00:00:00.000Z"
 		},
@@ -15,9 +30,25 @@
 			"title": "Learn OpenUI5",
 			"hashTag": "#UI5",
 			"completed": false,
-			"priority": "High",
+			"priority": "3",
 			"DDLAtUTC": "2024-01-25T00:00:00.000Z",
 			"addedAtUTC": "2023-12-19T00:00:00.000Z"
+		},
+		{
+			"title": "Example with Top Priority",
+			"hashTag": "#Example",
+			"completed": false,
+			"priority": "5",
+			"DDLAtUTC": "2024-01-25T00:00:00.000Z",
+			"addedAtUTC": "2023-01-24T00:00:00.000Z"
+		},
+		{
+			"title": "Example with High Priority",
+			"hashTag": "#Example",
+			"completed": false,
+			"priority": "4",
+			"DDLAtUTC": "2024-01-25T00:00:00.000Z",
+			"addedAtUTC": "2023-01-24T00:00:00.000Z"
 		}
 	],
 	"itemsRemovable": true,
