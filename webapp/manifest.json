@@ -2,7 +2,20 @@
 	"_version": "1.12.0",
 	"sap.app": {
 		"id": "sap.ui.demo.todo",
-		"type": "application"
+		"i18n": "i18n/i18n.properties",
+		"title": "{{TITLE}}",
+		"type": "application",
+		"applicationVersion": {
+			"version": "0.1.0"
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": false,
+			"phone": false
+		}
 	},
 	"sap.ui5": {
 		"dependencies": {
@@ -40,6 +53,10 @@
 					"uri": "css/styles.css"
 				}
 			]
+		},
+		"contentDensities": {
+		  "compact": true,
+		  "cozy": false
 		}
 	}
 }

@@ -18,6 +18,15 @@ sap.ui.define([], () => {
             else {
                 return "Undef.\nPrio."
             }
-		}
+		},
+
+        dateText(sDateInstance) {
+            try {
+                return new Date(sDateInstance)
+            }
+            catch (error) {
+                return "Unknown Datatype."
+            }
+        }
 	};
 });

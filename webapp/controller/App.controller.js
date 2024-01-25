@@ -50,6 +50,7 @@ sap.ui.define([
 
 			this.aSearchFilters = [];
 			this.aTabFilters = [];
+			this.aHashTagFilters = [];
 
 			oModel.setData({
 				isMobile: Device.browser.mobile,
@@ -60,13 +61,8 @@ sap.ui.define([
 
 			this.getView().setModel(oModel, "view");
 			// should do it on component level.
-			this.getView().getModel().setProperty("/default_newTodo/DDLAtUTC", UI5Date.getInstance())
-            this.getView().getModel().setProperty("/newTodo/DDLAtUTC", UI5Date.getInstance())
-		},
-
-		// Abort
-		DPchange() {
-			return 
+			this.getView().getModel().setProperty("/default_newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1))
+            this.getView().getModel().setProperty("/newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1))
 		},
 
 		/**
@@ -81,11 +77,9 @@ sap.ui.define([
 			
 			const aTodos = oModel.getProperty("/todos").map((oTodo) => Object.assign({}, oTodo));
 
-			let DateofAddedUTC = UI5Date.getInstance()
-			//'2024-1-16T03:29:42Z'
+			let DateofAddedUTC = JSON.stringify(UI5Date.getInstance()).slice(1,-1)
 
 			// Hansen:
-			// todo: add: Seleciton of priority:["Top", "High", "Normal(Default)", "Low", "Very Low"]
 			// todo: fix the problem of Date(UTC...)
 			const newTodo = oModel.getProperty("/newTodo")
 			const defaultNewTodo = oModel.getProperty("/default_newTodo")
@@ -144,20 +138,27 @@ sap.ui.define([
 
 			const oModel = this.getView().getModel();
 			// First reset current filters
-			if(this.aSearchFilters.length){
-				this.aSearchFilters = [];
+			if(this.aHashTagFilters.length){
+				this.aHashTagFilters = [];
+				oModel.setProperty("/itemsRemovable", true);
 			}
 			else {
-				this.aSearchFilters = [];
+				this.aHashTagFilters = [];
 				if (SearchHashTag && SearchHashTag.length > 0) {
 					oModel.setProperty("/itemsRemovable", false);
 					const filter = new Filter("hashTag", FilterOperator.Contains, SearchHashTag);
-					this.aSearchFilters.push(filter);
+					this.aHashTagFilters.push(filter);
 				} else {
 					oModel.setProperty("/itemsRemovable", true);
 				}
 			}
 
+			this._applyListFilters();
+		},
+		clearHashTagFilter(oEvent) {
+			const oModel = this.getView().getModel();
+			this.aHashTagFilters = [];
+			oModel.setProperty("/itemsRemovable", true);
 			this._applyListFilters();
 		},
 		/**
@@ -176,9 +177,21 @@ sap.ui.define([
 			this.sSearchQuery = oEvent.getSource().getValue();
 			if (this.sSearchQuery && this.sSearchQuery.length > 0) {
 				oModel.setProperty("/itemsRemovable", false);
-				const filter = new Filter("title", FilterOperator.Contains, this.sSearchQuery);
-				this.aSearchFilters.push(filter);
+				if ( this.sSearchQuery[0] === '#' ) {
+					this.aHashTagFilters = [];
+					if (this.sSearchQuery.length > 1)
+					{
+						const filter = new Filter("hashTag", FilterOperator.Contains, this.sSearchQuery.substring(1));
+						this.aHashTagFilters.push(filter);			
+					}
+				}
+				else {
+					const filter = new Filter("title", FilterOperator.Contains, this.sSearchQuery);
+					this.aSearchFilters.push(filter);
+				}
 			} else {
+				this.aSearchFilters = [];
+				this.aHashTagFilters = [];
 				oModel.setProperty("/itemsRemovable", true);
 			}
 
@@ -212,7 +225,7 @@ sap.ui.define([
 			const oList = this.byId("todoList");
 			const oBinding = oList.getBinding("items");
 
-			oBinding.filter(this.aSearchFilters.concat(this.aTabFilters), "todos");
+			oBinding.filter(this.aSearchFilters.concat(this.aTabFilters).concat(this.aHashTagFilters), "todos");
 
 			let sI18nKey;
 			if (this.sFilterKey && this.sFilterKey !== "all") {
