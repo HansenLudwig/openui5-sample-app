@@ -14,33 +14,38 @@
 						<f:DynamicPageHeader pinnable="false">
 							<FlexBox renderType="Div" alignItems="Center" justifyContent="Start">
 								<!-- Not Working :( -->
-								<Select class="todoPriority" id="addTodoItemPriority" 
-									forceSelection="false"
-									selectedKey="{/newTodo/priority}"
-									items="{ 
-										path: 'view>/selectOptions/OptionCollection',
-										sorter: { path: 'PriorityID' } 
-									}">
-									<core:ListItem key="{view>PriorityID}" text="{view>PriName}" icon="{view>Icon}"
+								<FlexBox >
+									<Select class="todoPriority" id="addTodoItemPriority" 
+										forceSelection="false"
+										selectedKey="{/newTodo/priority}"
+										items="{ 
+											path: 'view>/selectOptions/OptionCollection',
+											sorter: { path: 'PriorityID',
+														descending: true } 
+										}">
+										<core:ListItem key="{view>PriorityID}" text="{view>PriName}" icon="{view>Icon}"
+										class="sapUiSmallMarginEnd"/>
+									</Select>
+								</FlexBox>
+								<FlexBox justifyContent="Center" alignItems='Center'>
+									<Label text="DDL: " textAlign="Center" class="sapUiSmallMarginEnd"/>
+									<DatePicker id='DP1'
+										value="{
+											path:'/newTodo/DDLAtUTC',
+											type: 'sap.ui.model.type.Date',
+											formatOptions:{
+												source: { pattern: 'yyyy-MM-dd\'T\'HH:mm:ss.sss\'Z' }
+											}
+									}" 
 									class="sapUiSmallMarginEnd"/>
-								</Select>
+								</FlexBox>
 								
-								<Text text="DDL: " text-align="center" class="sapUiSmallMarginEnd"/>
-								<DatePicker id='DP1'
-									value="{
-										path:'view>/valueDP1',
-										type: 'sap.ui.model.type.Date',
-										formationOptions:{
-											style: 'short'
-										}
-								}" 
-								class="sapUiSmallMarginEnd"/>
 							</FlexBox>
 							<!--  Input: ("What needs to be done?") -->
 							<Input class="todoInput" id="addTodoItemInput" value="{/newTodo/title}"
 								placeholder="{i18n>INPUT_PLACEHOLDER}"/>
 							<Button id="addTodoItemButton"
-								Icon="sap-icon://add-product" text="{i18n>ADD_NEW_TODO_BUTT}"
+								icon="sap-icon://add-product" text="{i18n>ADD_NEW_TODO_BUTT}"
 								press=".addTodo"/>
 								<!--  -->
 						</f:DynamicPageHeader>
@@ -51,7 +56,13 @@
 							id="todoList"
 							headerText="{i18n>todoListTitle}"
 							noDataText="{i18n>NO_ITEMS}"
-							items="{ path: '/todos', events: { change: '.updateItemsLeftCount' } }"
+							items="{
+								path: '/todos', events: { change: '.updateItemsLeftCount' } ,
+								sorter: {
+									path:'',
+									descending:true
+									}
+								}"
 							mode="None"
 							growing="true"
 							growingScrollToLoad="true"
@@ -75,9 +86,19 @@
 										</items>
 									</SegmentedButton>
 
+									<Button id="clearHashTagFilter" enabled="true"
+										icon="sap-icon://action" text="{i18n>CLEAR_HASHTAG_FILTER}"
+										press=".clearHashTagFilter" >
+									</Button>
+
 									<Button id="clearCompleted" enabled="{/itemsRemovable}"
 										icon="sap-icon://delete" text="{i18n>CLEAR_COMPLETED}"
-										press=".clearCompleted" />
+										press=".clearCompleted">
+										<layoutData>
+											<OverflowToolbarLayoutData priority="AlwaysOverflow"/>
+										</layoutData>
+									</Button>
+
 								</OverflowToolbar>
 							</headerToolbar>
 							
@@ -93,30 +114,72 @@
 							<CustomListItem>
 								<HBox>
 									<CheckBox selected="{completed}" />
-									<VBox justifyContent="Center"
+									<!-- Priority -->
+									<FlexBox justifyContent="Center"
+										alignItems='Center'
 										class="CustomListItemPriority"
 									>
 										<Text
-											text="{priority}"
-											text-align="center"
-											width="63px"/>
-									</VBox>
+											text="{
+												path:'priority',
+												formatter: '.formatter.priorityText'
+											}"
+											textAlign="Center"
+											width="74px">
+											<customData>
+												<core:CustomData key="todo-item-priority"
+													value="{priority}" writeToDom="true" />
+											</customData>
+										</Text>
+									</FlexBox>
 									<VBox justifyContent="Center"
 										class="CustomListItemTitle"
 										width="60%">
-										<Text text="{title}" />
+										<Text text="{title}">
+											<customData>
+												<core:CustomData key="todo-item-completed"
+													value="{:= String(${completed})}" writeToDom="true" />
+											</customData>
+										</Text>
 										<Link
 											text="{hashTag}"
 											press="pressOnHashTag"/>
 									</VBox>
 									<VBox justifyContent="Center">
-										<Text text="Added at: {addedAtUTC} " />
+										<FlexBox alignItems='Center'>
+											<Label text="Added at: "/>
+											<Text text="{
+												path: 'addedAtUTC',
+												type: 'sap.ui.model.type.DateTime',
+												formatOptions: {
+													style: 'medium',
+													source: {
+														pattern: 'yyyy-MM-dd\'T\'HH:mm:ss.sss\'Z'
+													}
+												}
+											} " />
+										</FlexBox>
+										<FlexBox alignItems='Center'>
+											<Label text="DDL: "/>
+											<Text text="{
+												path: 'DDLAtUTC',
+												type: 'sap.ui.model.type.Date',
+												formatOptions: {
+													style: 'medium',
+													source: {
+														pattern: 'yyyy-MM-dd\'T\'HH:mm:ss.sss\'Z'
+													}
+												}
+											} ">
+												<customData>
+													<core:CustomData key="todo-item-overtime"
+														value="1" writeToDom="true" />
+												</customData>
+											</Text>
+										</FlexBox>
 									</VBox>
 								</HBox>
-								<customData>
-									<core:CustomData key="todo-item-completed"
-										value="{= String(${completed})}" writeToDom="true" />
-								</customData>
+									
 							</CustomListItem>
 						</List>
 					</f:content>

@@ -1,16 +1,31 @@
 /* Strikes through the completed items */
-li[data-todo-item-completed="true"] span {
+div span[data-todo-item-completed="true"] {
 	text-decoration: line-through;
 }
 
 div.CustomListItemPriority span {
 	font-weight: bold;
 }
-  /* A failed try on setting color of Top-Priority to 'Red'*/
-div.CustomListItemPriority span:contains('Top') {
-	color:red
+
+div span[data-todo-item-priority] {
+	color:#e3e3e3
 }
 
+div span[data-todo-item-priority="5"] {
+	color:red
+}
+div span[data-todo-item-priority="4"] {
+	color:#ffa500
+}
+div span[data-todo-item-priority="3"] {
+	color:#000000
+}
+div span[data-todo-item-priority="2"] {
+	color:#a5a5a5
+}
+div span[data-todo-item-priority="1"] {
+	color:#a5a5a5
+}
 
 div.CustomListItemTitle span {
 	font-weight: bold;
