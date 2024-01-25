@@ -154,8 +154,6 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent Input changed event
 		 */
 		onSearch(oEvent) {
-			// Hansen:
-			// To-do: Add search on HashTag, by starting with "#".
 			const oModel = this.getView().getModel();
 
 			// First reset current filters
