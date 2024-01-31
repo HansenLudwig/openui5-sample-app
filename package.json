@@ -1,14 +1,15 @@
 {
-	"name": "openui5-sample-app",
-	"version": "0.4.0",
-	"description": "Sample of an OpenUI5 app",
+	"name": "openui5-todo-app-hansen",
+	"version": "0.6.0",
+	"description": "Sample of an OpenUI5 todo app, modified by Hansen",
 	"private": true,
 	"engines": {
 		"node": ">=18.14.0",
 		"npm": ">=9"
 	},
 	"scripts": {
-		"start": "ui5 serve",
+		"start": "ui5 serve --port 8192 --open index.html",
+		"mockserver": "nodemon server/todoapp-server.js",
 		"lint": "eslint webapp",
 		"karma": "karma start",
 		"karma-ci": "rimraf coverage && karma start karma-ci.conf.js",
@@ -17,6 +18,13 @@
 		"build": "ui5 build -a --clean-dest",
 		"build-self-contained": "ui5 build self-contained -a --clean-dest",
 		"serve-dist": "ws --compress -d dist"
+	},
+	"dependencies": {
+        "cors": "^2.8.5",
+        "csv-parser": "^3.0.0",
+        "express": "^4.18.2",
+        "nodemon": "^3.0.1",
+        "xhr2": "^0.2.1"
 	},
 	"devDependencies": {
 		"@ui5/cli": "^3.8.0",
