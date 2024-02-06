@@ -145,31 +145,17 @@
 											text="{hashTag}"
 											press="pressOnHashTag"/>
 									</VBox>
-									<VBox justifyContent="Center">
+									<VBox justifyContent="Center" width="auto">
 										<FlexBox alignItems='Center'>
 											<Label text="Added at: "/>
 											<Text text="{
-												path: 'addedAtUTC',
-												type: 'sap.ui.model.type.DateTime',
-												formatOptions: {
-													style: 'medium',
-													source: {
-														pattern: 'yyyy-MM-dd\'T\'HH:mm:ss.sss\'Z'
-													}
-												}
+												path: 'addedAtUTC'
 											} " />
 										</FlexBox>
 										<FlexBox alignItems='Center'>
 											<Label text="DDL: "/>
 											<Text text="{
-												path: 'DDLAtUTC',
-												type: 'sap.ui.model.type.Date',
-												formatOptions: {
-													style: 'medium',
-													source: {
-														pattern: 'yyyy-MM-dd\'T\'HH:mm:ss.sss\'Z'
-													}
-												}
+												path: 'DDLAtUTC'
 											} ">
 												<customData>
 													<core:CustomData key="todo-item-overtime"

@@ -1,0 +1,23 @@
+{
+	"default_newTodo":
+	{
+		"title": "default title #defaultHashTag",
+		"hashTag": "",
+		"completed": false,
+		"priority": "3",
+		"DDLAtUTC": "",
+		"addedAtUTC": ""
+	},
+	"newTodo":{
+		"title": "default title #defaultHashTag",
+		"hashTag": "",
+		"completed": false,
+		"priority": "3",
+		"DDLAtUTC": "",
+		"addedAtUTC": ""
+		
+	},
+	"todos":[],
+	"itemsRemovable": true,
+	"completedCount": 1
+}

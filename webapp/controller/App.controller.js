@@ -1,3 +1,6 @@
+// const { response } = require("express"); // not in ES6
+// import { oOptions } from "../model/prioritylist"; // not in a Model either :(
+
 sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/mvc/Controller",
@@ -17,7 +20,7 @@ sap.ui.define([
 
 			let oModel = new JSONModel();
 			
-			let oOptions = {
+			const oOptions = {
 				"SelectedOption": "Normal(Default)",
 				"OptionCollection": [
 					{
@@ -46,7 +49,7 @@ sap.ui.define([
 						"Icon": "sap-icon://add-product"
 					}
 				]
-			};
+			}
 
 			this.aSearchFilters = [];
 			this.aTabFilters = [];
@@ -59,10 +62,21 @@ sap.ui.define([
 				filterText: undefined
 			});
 
-			this.getView().setModel(oModel, "view");
+			this.getView().setModel(oModel, 'view');
 			// should do it on component level.
-			this.getView().getModel().setProperty("/default_newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1))
-            this.getView().getModel().setProperty("/newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1))
+			this.getView().getModel().setProperty("/default_newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1));
+            this.getView().getModel().setProperty("/newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1));
+			this._front2server("Ask").then( (server_res) => {
+				if (String(server_res.Status) === '200') {
+					const server_data = server_res.data.todos
+					server_data.forEach( (todo) => {
+						todo.DDLAtUTC = Date(todo.DDLAtUTC);
+						todo.addedAtUTC = Date(todo.addedAtUTC);
+					} );
+					this.getView().getModel().setProperty('/todos', server_data);
+				}
+				else { throw new Error('ServerError'); }
+			});
 		},
 
 		/**
@@ -77,7 +91,8 @@ sap.ui.define([
 			
 			const aTodos = oModel.getProperty("/todos").map((oTodo) => Object.assign({}, oTodo));
 
-			let DateofAddedUTC = JSON.stringify(UI5Date.getInstance()).slice(1,-1)
+			//let DateofAddedUTC = JSON.stringify(UI5Date.getInstance()).slice(1,-1)
+			const DateofAddedUTC = new Date();
 
 			// Hansen:
 			// todo: fix the problem of Date(UTC...)
@@ -87,9 +102,9 @@ sap.ui.define([
 			if(newTodoHashTagIdx === -1) {
 				newTodoHashTagIdx = String(newTodo.title).length
 			}
-			let newTodoTitle = newTodo.title.substring(0, newTodoHashTagIdx)
-			let newTodoHashTag = newTodo.title.substring(newTodoHashTagIdx)
-			let newTodoDDL = newTodo.DDLAtUTC
+			const newTodoTitle = newTodo.title.substring(0, newTodoHashTagIdx)
+			const newTodoHashTag = newTodo.title.substring(newTodoHashTagIdx)
+			const newTodoDDL = new Date(newTodo.DDLAtUTC)
 			aTodos.push({
 				title: newTodoTitle,
 				hashTag: newTodoHashTag,
@@ -249,6 +264,36 @@ sap.ui.define([
 			this.getView().getModel("view").setProperty("/filterText", sFilterText);
 		},
 
-	});
+		async _front2server(operation='Ask', send_data={}) {
+			const server_add = "http://localhost";
+			const server_port = "3000";
+			const server_cd = "/todoapp";
+			const sv_url = server_add + (server_port && ':') + server_port + server_cd;
 
-});
+			const httpPack = {
+				method: "POST",
+				mode: "cors",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify( 
+					{
+					"operation": operation,
+					"data": send_data,
+				} ),
+				dataType: "json"
+				/*
+				success: function (data) {
+					console.log(data);
+				} */
+			};
+			const server_res = await fetch(sv_url, httpPack).catch( (err) => {
+				console.error(err);
+				return {Status: '500', Error: "Internal Server Error"}
+			});
+
+			const server_res_json = await server_res.json();	// {Status: 200, data: []}
+			return server_res_json;
+		}
+
+	}); // Controller.extend
+
+}); // sap.ui.define
