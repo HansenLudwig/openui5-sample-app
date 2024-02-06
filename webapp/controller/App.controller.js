@@ -7,8 +7,8 @@ sap.ui.define([
 	"sap/ui/model/Filter",
 	"sap/ui/model/FilterOperator",
 	"sap/ui/model/json/JSONModel",
-	"sap/ui/unified/DateTypeRange",	//
-	"sap/ui/core/date/UI5Date",		//
+	"sap/ui/unified/DateTypeRange",
+	"sap/ui/core/date/UI5Date",
 	"../model/formatter"
 ], (Device, Controller, Filter, FilterOperator, JSONModel, DateTypeRange, UI5Date, formatter) => {
 	"use strict";
