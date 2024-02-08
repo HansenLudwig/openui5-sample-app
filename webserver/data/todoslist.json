@@ -1,44 +1,28 @@
 {
     "todos": [
         {
-            "title": "Start this app",
-            "hashTag": "#ABC",
-            "completed": true,
-            "priority": "3",
-            "DDLAtUTC": "2023-12-20T00:00:00.000Z",
-            "addedAtUTC": "2023-12-17T00:00:00.000Z"
-        },
-        {
-            "title": "Learn OpenUI5",
-            "hashTag": "#UI5",
-            "completed": false,
-            "priority": "5",
-            "DDLAtUTC": "2024-01-25T00:00:00.000Z",
-            "addedAtUTC": "2023-12-19T00:00:00.000Z"
-        },
-        {
             "title": "Example from the Server",
             "hashTag": "#Port:3000",
             "completed": false,
             "priority": "5",
-            "DDLAtUTC": "2024-01-25T00:00:00.000Z",
-            "addedAtUTC": "2023-01-24T00:00:00.000Z"
+            "DDLAtUTC": "Thu Feb 08 2024 08:29:27 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Thu Feb 08 2024 08:29:27 GMT+0100 (中欧标准时间)"
         },
         {
             "title": "Example with High Priority",
             "hashTag": "#Example",
             "completed": false,
             "priority": "4",
-            "DDLAtUTC": "2024-01-25T00:00:00.000Z",
-            "addedAtUTC": "2023-01-24T00:00:00.000Z"
+            "DDLAtUTC": "Thu Feb 08 2024 08:29:27 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Thu Feb 08 2024 08:29:27 GMT+0100 (中欧标准时间)"
         },
         {
             "title": "Example with Undefined Priority(Error Handle)",
             "hashTag": "#Example",
             "completed": false,
             "priority": "",
-            "DDLAtUTC": "2024-01-25T00:00:00.000Z",
-            "addedAtUTC": "2023-01-24T00:00:00.000Z"
+            "DDLAtUTC": "Thu Feb 08 2024 08:29:27 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Thu Feb 08 2024 08:29:27 GMT+0100 (中欧标准时间)"
         }
     ]
 }

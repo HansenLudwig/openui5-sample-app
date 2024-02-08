@@ -20,13 +20,13 @@ const port = 3000;
 app.use("/", express.static("../webserver"))
 console.log(__dirname);
 
-const data_framework = "./data/todoodata.json";
-const data_units = "./data/todoslist.json";
+const data_framework = './data/todoodata.json';
+const data_units = './data/todoslist.json';
 
 app.post('/todoapp', (req, res) =>
 {   /*接收req.body.xxx*/ 
     const params = req.body;
-    const operation = params.operation;
+    const operation = params.operation.toLowerCase();
 
     res.setHeader('access-control-allow-origin', 'http://localhost:8192');
     res.setHeader('access-control-allow-headers', 'Content-Type');
@@ -34,39 +34,36 @@ app.post('/todoapp', (req, res) =>
     const res_data = {"Status": 0, "data":{}, "msg":""}
     let _data = {};
     switch (operation) {
-        case "Add":
+        case 'add':
+            _data = _addData(params.data);
+            break;
+        case 'del':
             // todo
             break;
-        case "Del":
-            // todo
-            break;
-        case "Write":
+        case 'overwrite':
+        case 'over_write':
             _data = _saveData(params.data, "data");
-            if (_data.Status) {
-                res_data.Status = 400;
-                res_data.msg = _data.Error;
-                res_data = _getParsedTodos().Data;
-            } else {
-                res_data.Status = 200; // 202; // Accepted indicates that the request has been accepted
-                                        // for processing, but the processing has not been completed;
-                                        // in fact, processing may not have started yet.
-            }
             break;
-        case "Ask":
+        case 'pre_load':
+        case 'pre-load':
+            _data = _loadData('whole');
+            break;
+        case 'ask':
         default:
-            _data = _loadData('list') // {Status:0/1, Data:[]}
-            if (_data.Status) {
-                res_data.Status = 400; // Bad Request
-                res_data.msg = "Bad Request: Not returning data.";
-                res_data.data = [];
-            } else {
-                res_data.Status = 200;  // OK
-                res_data.data = _data.Data;
-            }
-            // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8192');
-            res.send(res_data);
+            _data = _loadData('list'); // {Status:0/1, Data:[]}
             break;
     }
+    if (_data.Status) {
+        res_data.Status = 400;
+        res_data.msg = _data.Error;
+        res_data = _getParsedTodos().Data;
+    } else {
+        res_data.Status = 200; // 202; // Accepted indicates that the request has been accepted
+                                // for processing, but the processing has not been completed;
+                               // in fact, processing may not have started yet.
+        res_data.data = _data.Data;
+    }
+    res.send(res_data);
     return
 } )
 
@@ -87,15 +84,15 @@ function _addData(newTodo)
     const add_return = {"Status": 1, Data: []};
     try {
         const todosList = _loadData("data");  // {"Status":0, "data":{"todos":[Array]}}
+        if (_todoAssertion(newTodo)) { //assert(_todoAssertion(newTodo));
+            throw new Error("IllegalTodoDataFormats"); }
         if (todosList.Status) {
             throw new Error('DataLoadFailed'); }
         todos = todosList.Data.todos;         // [Array: {}*n]
-        if (_todoAssertion(newTodo))
-        {   //assert(_todoAssertion(newTodo));
-            throw new Error("IllegalTodoDataFormats");
-        }
         todos.push(newTodo);
-        _saveData(todos, "data");
+        if ( _saveData(todos, 'data').Status ) {
+            throw new Error('DataSaveFailed'); }
+        add_return.Status = 0;
     }
     catch (error)
     {
@@ -140,7 +137,7 @@ function _loadData(content="whole")
     }
     const load_return = {"Status": 1, Data: {}}
     try {
-        const todoItems = {};
+        let todoItems = {};
         switch (content){
             default:    // The default case does NOT have to be the last case in a switch block. by W3School.
             case 0:
@@ -182,30 +179,37 @@ function _saveData(_data, content="whole")
         content = content.toLowerCase()
     }
     let save_return = {"Status": 1, "Error":""};    // Failed.
+    
+    const data_framework = './webserver/data/todoodata.json';
+    const data_units = './webserver/data/todoslist.json';
+
     try {
         let save_CallBack = (err) => {
             if (err) throw err;
         }
+        const data_struct = {"todos": []};
         switch (content){
             default:
             case 0:
             case "whole":
-                fs.writeFile(data_units, JSON.stringify(_data.todos, null, 4), save_CallBack);
+                data_struct.todos = _data.todos;
+                fs.writeFileSync(data_units, JSON.stringify(data_struct, null, 4), save_CallBack);
                 _data.todos = [];
-                fs.writeFile(data_framework, JSON.stringify(_data, null, 4), save_CallBack);
+                fs.writeFileSync(data_framework, JSON.stringify(_data, null, 4), save_CallBack);
                 break;
 
             case 1:
             case "headeronly":
             case "withoutdata":
                 _data.todos = [];   // Optional.
-                fs.writeFile(data_framework, JSON.stringify(_data, null, 4), save_CallBack);
+                fs.writeFileSync(data_framework, JSON.stringify(_data, null, 4), save_CallBack);
                 break;
 
             case 2:
             case "list":
             case "data":
-                fs.writeFile(data_units, JSON.stringify(_data, null, 4), save_CallBack);
+                data_struct.todos = _data
+                fs.writeFileSync(data_units, JSON.stringify(data_struct, null, 4), save_CallBack);
                 break;
         }
         save_return.Status = 0;
@@ -220,9 +224,12 @@ function _saveData(_data, content="whole")
 
 function _todoAssertion(todo)
 {
-    const checkList = {"propertyCheck": true};
+    const checkList = {"lengthCheck":true, "propertyCheck": true};
     const checkListIdx = Object.keys(checkList);
-
+    
+    // check length
+    if ( (JSON.stringify(todo).length > 2) ) { // '{}' === 2
+        return false; }
     // check property
     propertyCheckList = ["title", "hashTag", "completed", "priority", "DDLAtUTC", "addedAtUTC"];
     propertyCheckList.forEach((necessaryProperty) => {

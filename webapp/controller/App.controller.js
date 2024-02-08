@@ -1,6 +1,3 @@
-// const { response } = require("express"); // not in ES6
-// import { oOptions } from "../model/prioritylist"; // not in a Model either :(
-
 sap.ui.define([
 	"sap/ui/Device",
 	"sap/ui/core/mvc/Controller",
@@ -9,8 +6,9 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/unified/DateTypeRange",
 	"sap/ui/core/date/UI5Date",
-	"../model/formatter"
-], (Device, Controller, Filter, FilterOperator, JSONModel, DateTypeRange, UI5Date, formatter) => {
+	'../model/formatter',
+	'../model/prioritylist'
+], (Device, Controller, Filter, FilterOperator, JSONModel, DateTypeRange, UI5Date, formatter, prioritylist) => {
 	"use strict";
 
 	return Controller.extend("sap.ui.demo.todo.controller.App", {
@@ -49,7 +47,27 @@ sap.ui.define([
 						"Icon": "sap-icon://add-product"
 					}
 				]
-			}
+			};
+			const ogpOptions = {
+				OptionCollection: [
+					{
+						groupingID: '1',
+						groupingName: 'Priority'
+					},
+					{
+						groupingID: '2',
+						groupingName: 'Added'
+					},
+					{
+						groupingID: '3',
+						groupingName: 'DDL'
+					},
+					{
+						groupingID: '4',
+						groupingName: 'HashTag'
+					}
+				]
+			};
 
 			this.aSearchFilters = [];
 			this.aTabFilters = [];
@@ -57,26 +75,17 @@ sap.ui.define([
 
 			oModel.setData({
 				isMobile: Device.browser.mobile,
-				selectOptions: oOptions,
+				selectOptions: oOptions,	// prioritylist
 				//valueDP1: UI5Date.getInstance(),
+				ogpOptions: ogpOptions,
 				filterText: undefined
 			});
 
 			this.getView().setModel(oModel, 'view');
-			// should do it on component level.
 			this.getView().getModel().setProperty("/default_newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1));
-            this.getView().getModel().setProperty("/newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1));
-			this._front2server("Ask").then( (server_res) => {
-				if (String(server_res.Status) === '200') {
-					const server_data = server_res.data.todos
-					server_data.forEach( (todo) => {
-						todo.DDLAtUTC = Date(todo.DDLAtUTC);
-						todo.addedAtUTC = Date(todo.addedAtUTC);
-					} );
-					this.getView().getModel().setProperty('/todos', server_data);
-				}
-				else { throw new Error('ServerError'); }
-			});
+			this.getView().getModel().setProperty("/newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1));
+			
+			this._front2server('pre_load');
 		},
 
 		/**
@@ -91,11 +100,6 @@ sap.ui.define([
 			
 			const aTodos = oModel.getProperty("/todos").map((oTodo) => Object.assign({}, oTodo));
 
-			//let DateofAddedUTC = JSON.stringify(UI5Date.getInstance()).slice(1,-1)
-			const DateofAddedUTC = new Date();
-
-			// Hansen:
-			// todo: fix the problem of Date(UTC...)
 			const newTodo = oModel.getProperty("/newTodo")
 			const defaultNewTodo = oModel.getProperty("/default_newTodo")
 			let newTodoHashTagIdx = String(newTodo.title).search("#")
@@ -104,19 +108,21 @@ sap.ui.define([
 			}
 			const newTodoTitle = newTodo.title.substring(0, newTodoHashTagIdx)
 			const newTodoHashTag = newTodo.title.substring(newTodoHashTagIdx)
-			const newTodoDDL = new Date(newTodo.DDLAtUTC)
-			aTodos.push({
+			const newTodoDDL = Date(newTodo.DDLAtUTC)	// Questionable...
+			const newTodoObject = {
 				title: newTodoTitle,
 				hashTag: newTodoHashTag,
 				completed: false,
 				priority: newTodo.priority,  //newTodoPriorityIndex[newTodo.priority],
 				DDLAtUTC: newTodoDDL,
-				addedAtUTC: DateofAddedUTC,
-				//addedAt: Date(DateofAddedUTC)
-			});
+				addedAtUTC: new Date(),
+			}
+			const server_res = this._front2server('add', newTodoObject, {'oModel':oModel, 'aTodos':aTodos, 'defaultNewTodo':defaultNewTodo});
+		},
 
-			oModel.setProperty("/todos", aTodos);
-			oModel.setProperty("/newTodo", defaultNewTodo);
+		onCompletedClick()
+		{	//
+			this._front2server('overwrite', aTodos, {'oModel':oModel});
 		},
 
 		/**
@@ -134,6 +140,7 @@ sap.ui.define([
 				}
 			}
 
+			this._front2server('overwrite', aTodos, {'oModel':oModel});
 			oModel.setProperty("/todos", aTodos);
 		},
 
@@ -264,7 +271,66 @@ sap.ui.define([
 			this.getView().getModel("view").setProperty("/filterText", sFilterText);
 		},
 
-		async _front2server(operation='Ask', send_data={}) {
+		_front2server(operation='ask', send_data={}, oParam={})
+		{
+			let fn_return = { Status: 400, data:{}, msg: {} };
+			fn_return = this._front2server_transm(operation, send_data).then( (server_res) => {
+				const server_return = { Status: 400, data:{}, msg: {} };
+				if (String(server_res.Status) === '200') {
+					operation = operation.toLowerCase();
+					switch (operation) {
+						case 'pre_load':
+						case 'pre-load':
+						case 'ask':
+							const server_data = server_res.data;  // to-be tested: ser_res.data_consistency
+							const server_todos = server_data.todos;
+							server_todos.forEach( (todo) => {
+								todo.DDLAtUTC = Date(todo.DDLAtUTC);
+								todo.addedAtUTC = Date(todo.addedAtUTC);
+							} );
+							this.getView().getModel().setProperty('/todos', server_data.todos);
+							if (operation ==='pre_load' || operation === 'pre-load')
+							{
+								server_data.newTodo.addedAtUTC = new Date();
+								server_data.default_newTodo.addedAtUTC = new Date(); 
+								this.getView().getModel().setProperty('/default_newTodo', server_data.default_newTodo);
+								this.getView().getModel().setProperty('/newTodo', server_data.newTodo);
+							}
+							server_return.data = server_data;
+							break;
+						case 'add':
+							if (server_res.Status === 200)
+							{	// {oModel, aTodos, defaultNewTodo}
+								const oModel = oParam.oModel;
+								oParam.aTodos.push(send_data);
+								oModel.setProperty('/todos', oParam.aTodos);
+								oModel.setProperty('/newTodo', oParam.defaultNewTodo);
+							}
+							else {
+								MessageBox.error('Failed transmission with the server, please try again later.');
+							}
+							break;
+						case 'overwrite':
+							if (server_res.Status === 200)
+							{	// {oModel}
+								oParam.oModel.setProperty('/todos', send_data);
+							}
+							else {
+								MessageBox.error('Failed transmission with the server, please try again later.');
+							}
+							break;
+
+					}
+				}
+				else {
+					console.error('Error: Failed to load data from the server.')
+					console.error('Pres_Mode: Using local data instead...')
+					// throw new Error('ServerError');
+				}
+			});
+		},
+
+		async _front2server_transm(operation='ask', send_data={}) {
 			const server_add = "http://localhost";
 			const server_port = "3000";
 			const server_cd = "/todoapp";
@@ -277,7 +343,7 @@ sap.ui.define([
 				body: JSON.stringify( 
 					{
 					"operation": operation,
-					"data": send_data,
+					"data": send_data,	// newTodo
 				} ),
 				dataType: "json"
 				/*

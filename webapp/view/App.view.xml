@@ -74,6 +74,19 @@
 								<OverflowToolbar id="toolbar" class="sapUiSizeCompact"
 									visible="{= !${view>/isMobile} }">
 									<Title text="{i18n>todoListTitle}"/>
+									<!-- Constructing -->
+									<Select id="groupingOpt" class="sapUiSizeCompact" 
+									forceSelection="false"
+									selectedKey="{view>/ogpOptions}"
+									items="{ 
+										path: 'view>/ogpOptions/OptionCollection',
+										sorter: { path: 'groupingID',
+													descending: true } 
+									}">
+									<!-- End of Constructing -->
+									<core:ListItem key="{view>PriorityID}" text="{view>PriName}" icon="{view>Icon}"
+									class="sapUiSmallMarginEnd"/>
+									</Select>
 									<ToolbarSpacer/>
 									<SearchField id="searchTodoItemsInput" liveChange=".onSearch"
 										width="20rem" />
@@ -113,7 +126,9 @@
 
 							<CustomListItem>
 								<HBox>
-									<CheckBox selected="{completed}" />
+									<CheckBox
+										selected="{completed}"
+										select="onCompletedClick"/>
 									<!-- Priority -->
 									<FlexBox justifyContent="Center"
 										alignItems='Center'
