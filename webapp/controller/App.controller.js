@@ -123,6 +123,7 @@ sap.ui.define([
 		onCompletedClick()
 		{	//
 			this._front2server('overwrite', aTodos, {'oModel':oModel});
+			// this._front2server('completed', )
 		},
 
 		/**

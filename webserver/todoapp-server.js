@@ -9,6 +9,7 @@ const { error } = require("console");
 const app = express();
 
 const cors = require('cors');
+const { type } = require("os");
 app.use( cors({
     origin: '*'
 }) )
@@ -23,6 +24,12 @@ console.log(__dirname);
 const data_framework = './data/todoodata.json';
 const data_units = './data/todoslist.json';
 
+let _main_key_time = JSON.stringify(new Date()).slice(1, -1);
+let _main_key_id = 0;
+
+let global_data_frame = require(data_framework);
+const global_data_list = _getParsedTodos().Data;
+
 app.post('/todoapp', (req, res) =>
 {   /*接收req.body.xxx*/ 
     const params = req.body;
@@ -32,25 +39,31 @@ app.post('/todoapp', (req, res) =>
     res.setHeader('access-control-allow-headers', 'Content-Type');
     
     const res_data = {"Status": 0, "data":{}, "msg":""}
-    let _data = {};
+    let _data = {Status:1};
     switch (operation) {
         case 'add':
-            _data = _addData(params.data);
+            _data = _addData2RAM(params.data);
             break;
         case 'del':
-            // todo
+            _data = _delData(params)
+            break;
+        case 'completed':
             break;
         case 'overwrite':
         case 'over_write':
+            //_data = {Status: 1, Error: 'Access denied.'} // furture: overwrite should no longer be allowed.
             _data = _saveData(params.data, "data");
             break;
         case 'pre_load':
         case 'pre-load':
-            _data = _loadData('whole');
+            _data.Status = 0;
+            _data.Data = global_data_frame;
+            _data.Data.todos = global_data_list;
             break;
         case 'ask':
         default:
-            _data = _loadData('list'); // {Status:0/1, Data:[]}
+            _data = {Status:0, Data:global_data_list};
+            // _data = _loadData('list'); // {Status:0/1, Data:[]}
             break;
     }
     if (_data.Status) {
@@ -77,6 +90,19 @@ app.listen(port, () => {
     console.log(`App Server listening on port ${port}`);
 });
 
+function _genId(newTodo)
+{
+    const _addedTime = newTodo.addedAtUTC;
+    if (_addedTime >= _main_key_time)
+    {
+        _main_key_time = JSON.stringify(new Date()).slice(1, -1);
+        _main_key_id = 0;
+    } else {
+        _main_key_id += 1;
+    }
+    newTodo.id = (_main_key_time + String(_main_key_id));
+}
+
 function _addData(newTodo)
 {   /* Add a new Todo to ./todoitems.json and return feedback
     Inputs: newTodo: an Obj of Todo
@@ -89,6 +115,7 @@ function _addData(newTodo)
         if (todosList.Status) {
             throw new Error('DataLoadFailed'); }
         todos = todosList.Data.todos;         // [Array: {}*n]
+        _genId(newTodo)
         todos.push(newTodo);
         if ( _saveData(todos, 'data').Status ) {
             throw new Error('DataSaveFailed'); }
@@ -102,10 +129,47 @@ function _addData(newTodo)
     return add_return;
 }
 
+function _addData2RAM(newTodo)
+{
+    try {
+        if (_todoAssertion(newTodo)) { //assert(_todoAssertion(newTodo));
+            throw new Error("IllegalTodoDataFormats"); }
+        todos = global_data_list;
+        _genId(newTodo)
+        todos.push(newTodo);
+        if ( _saveData(todos, 'data').Status ) {
+            throw new Error('DataSaveFailed'); }
+        add_return.newId = newTodo.id;
+        add_return.Status = 0;
+    }
+    catch (error)
+    {
+        add_return.Status = 1;
+        add_return.Error = todosList.Error || "UnknownErrorWhenLoadingData"
+    }
+    return add_return;
+}
+
+function _delData(todoId)
+{
+    let i = global_data_list.length;
+    let _flag_finded = 0;
+    while(i--) {
+        if(global_data_list[i] === todoId) {
+            global_data_list.splice(i, 1);
+            _flag_finded++;
+        }
+    }
+    if (_flag_finded) {
+        return {Status: 0, Data:[]}; }
+    else {
+        return {Status: 1, Data:[], Error:'Element not found.'}; }
+}
+
 function _getParsedTodos()
 {   /* Read ./todoslist.json from file, TODOs_only!
     Outputs: Obj: { Status:0(OK)/1(Failed), Data: [Array-of-Todos] } */
-    const read_return = {"Status": 1, Data: []};
+    const read_return = {Status: 1, Data: []};
     try {
         // 【】【】
         // const todosList = require(data_units);  // {"todos":[Array]}
@@ -127,6 +191,30 @@ function _getParsedTodos()
         read_return.Error = todosList.Error || "UnknownErrorWhenLoadingData"
     }
     return read_return;
+}
+
+function _stringifyTodos(todoList='')
+{   /* Input: todoList: Nothing/String: use data in RAM; [Array]or{Object}: use inputed data
+      Output: str_todos = {todos:[{//todo}, ...]}*/
+    const str_todos = {todos:[]};
+    let _list = [];
+    if (typeof(todoList) === typeof('String'))
+    {   // RAM
+        _list = global_data_list; // ['array']
+    }
+    else if (typeof(todoList) === typeof(['Object'])) 
+    {   // Input Config
+        if('todos' in todoList) {   // {isObject:true, todos:[]}
+            _list = todoList.todos;
+        } else {    // ['array']
+            _lit = todoList; }
+    }
+    _list.forEach( (todo) => {
+        todo.DDLAtUTC = JSON.stringify(todo.DDLAtUTC).slice(1,-1);
+        todo.addedAtUTC = JSON.stringify(todo.addedAtUTC).slice(1,-1);
+    });
+    str_todos.todos = _list;
+    return str_todos;
 }
 
 function _loadData(content="whole")
@@ -192,7 +280,7 @@ function _saveData(_data, content="whole")
             default:
             case 0:
             case "whole":
-                data_struct.todos = _data.todos;
+                data_struct.todos = _stringifyTodos(_data.todos);
                 fs.writeFileSync(data_units, JSON.stringify(data_struct, null, 4), save_CallBack);
                 _data.todos = [];
                 fs.writeFileSync(data_framework, JSON.stringify(_data, null, 4), save_CallBack);
@@ -208,7 +296,7 @@ function _saveData(_data, content="whole")
             case 2:
             case "list":
             case "data":
-                data_struct.todos = _data
+                data_struct.todos = _stringifyTodos(_data);
                 fs.writeFileSync(data_units, JSON.stringify(data_struct, null, 4), save_CallBack);
                 break;
         }
