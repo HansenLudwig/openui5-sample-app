@@ -1,5 +1,67 @@
 {
-    "todos": {
-        "todos": []
-    }
+    "todos": [
+        {
+            "title": "Start this app",
+            "hashTag": "#ABC",
+            "completed": true,
+            "priority": "3",
+            "DDLAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "id": "2023-12-17T00:00:00.000Z0"
+        },
+        {
+            "title": "Learn OpenUI5",
+            "hashTag": "#UI5",
+            "completed": false,
+            "priority": "5",
+            "DDLAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "id": "2023-12-19T00:00:00.000Z0"
+        },
+        {
+            "title": "Example from the Server",
+            "hashTag": "#Port:3000",
+            "completed": false,
+            "priority": "5",
+            "DDLAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "id": "2023-01-24T00:00:00.000Z0"
+        },
+        {
+            "title": "Example with High Priority",
+            "hashTag": "#Example",
+            "completed": false,
+            "priority": "4",
+            "DDLAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "id": "2023-01-24T00:00:00.000Z1"
+        },
+        {
+            "title": "Example with Undefined Priority(Error Handle)",
+            "hashTag": "#Example",
+            "completed": false,
+            "priority": "",
+            "DDLAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "id": "2023-01-24T00:00:00.000Z2"
+        },
+        {
+            "title": "default title ",
+            "hashTag": "#defaultHashTag",
+            "completed": false,
+            "priority": "3",
+            "DDLAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "Tue Feb 20 2024 07:44:20 GMT+0100 (中欧标准时间)",
+            "id": "2024-02-19T14:10:40.547Z1"
+        },
+        {
+            "title": "Add ",
+            "hashTag": "#defaultHashTag",
+            "completed": false,
+            "priority": "3",
+            "DDLAtUTC": "Tue Feb 20 2024 07:44:48 GMT+0100 (中欧标准时间)",
+            "addedAtUTC": "2024-02-20T06:44:48.949Z",
+            "id": "2024-02-20T06:44:54.013Z0"
+        }
+    ]
 }
