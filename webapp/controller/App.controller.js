@@ -98,7 +98,7 @@ sap.ui.define([
 				return
 			}
 			
-			const aTodos = oModel.getProperty("/todos").map((oTodo) => Object.assign({}, oTodo));
+			const aTodos = oModel.getProperty('/todos').map((oTodo) => Object.assign({}, oTodo));
 
 			const newTodo = oModel.getProperty("/newTodo")
 			const defaultNewTodo = oModel.getProperty("/default_newTodo")
@@ -120,29 +120,39 @@ sap.ui.define([
 			const server_res = this._front2server('add', newTodoObject, {'oModel':oModel, 'aTodos':aTodos, 'defaultNewTodo':defaultNewTodo});
 		},
 
-		onCompletedClick()
+		onCompletedClick(oEvent)
 		{	//
-			this._front2server('overwrite', aTodos, {'oModel':oModel});
+			// this._front2server('overwrite', aTodos, {'oModel':oModel});
+			let changed_Checkbox_idx = oEvent.getSource().mBindingInfos.selected.binding.oContext.sPath.split('/')[2];
+			changed_Checkbox_idx = parseInt(changed_Checkbox_idx);
+			const oModel = this.getView().getModel();
+			const aTodos = oModel.getProperty('/todos').map((oTodo) => Object.assign({}, oTodo));
+			const cTodo = aTodos[changed_Checkbox_idx];
+			this._front2server('change', [{id:cTodo.id, completed:cTodo.completed}]);
 			// this._front2server('completed', )
 		},
 
 		/**
 		 * Removes all completed items from the todo list.
 		 */
-		clearCompleted() {
+		clearCompleted(oEvent) {
 			const oModel = this.getView().getModel();
 			const aTodos = oModel.getProperty("/todos").map((oTodo) => Object.assign({}, oTodo));
 
 			let i = aTodos.length;
+			const del_list = [];
 			while (i--) {
 				const oTodo = aTodos[i];
 				if (oTodo.completed) {
+					del_list.push({id:oTodo.id});
 					aTodos.splice(i, 1);
 				}
 			}
-
-			this._front2server('overwrite', aTodos, {'oModel':oModel});
-			oModel.setProperty("/todos", aTodos);
+			if (del_list.length)
+			{
+				this._front2server('del', del_list, {'oModel':oModel});
+				oModel.setProperty("/todos", aTodos);
+			}
 		},
 
 		/**
@@ -272,9 +282,26 @@ sap.ui.define([
 			this.getView().getModel("view").setProperty("/filterText", sFilterText);
 		},
 
+		_parseAndSetTodos(_data, struct='data') {
+			
+		},
+
+		_stringifyTodos(todosArr)
+		{	/* Input: todos: Array of Objs
+			 Output: Objs.date -> Date(date) */
+			 todosArr.forEach( (todo) => { 
+				todo.DDLAtUTC = Date(todo.DDLAtUTC);
+				todo.addedAtUTC = Date(todo.addedAtUTC);
+			});
+		},
+
 		_front2server(operation='ask', send_data={}, oParam={})
 		{
 			let fn_return = { Status: 400, data:{}, msg: {} };
+			if (operation === 'add') {
+				send_data.DDLAtUTC = JSON.stringify(send_data.DDLAtUTC).slice(1,-1);	//
+				send_data.addedAtUTC = JSON.stringify(send_data.addedAtUTC).slice(1,-1);
+			}
 			fn_return = this._front2server_transm(operation, send_data).then( (server_res) => {
 				const server_return = { Status: 400, data:{}, msg: {} };
 				if (String(server_res.Status) === '200') {
@@ -300,16 +327,16 @@ sap.ui.define([
 							server_return.data = server_data;
 							break;
 						case 'add':
-							if (server_res.Status === 200)
-							{	// {oModel, aTodos, defaultNewTodo}
-								const oModel = oParam.oModel;
-								oParam.aTodos.push(send_data);
-								oModel.setProperty('/todos', oParam.aTodos);
-								oModel.setProperty('/newTodo', oParam.defaultNewTodo);
-							}
-							else {
-								MessageBox.error('Failed transmission with the server, please try again later.');
-							}
+							// {oModel, aTodos, defaultNewTodo}
+							const oModel = oParam.oModel;
+							send_data.id = server_res.data;
+							send_data.addedAtUTC = Date(send_data.addedAtUTC);
+							oParam.aTodos.push(send_data);
+							oModel.setProperty('/todos', oParam.aTodos);
+							oModel.setProperty('/newTodo', oParam.defaultNewTodo);
+							break;
+						case 'change':
+							// see if there is a block necessary here.
 							break;
 						case 'overwrite':
 							if (server_res.Status === 200)
@@ -325,7 +352,6 @@ sap.ui.define([
 				}
 				else {
 					console.error('Error: Failed to load data from the server.')
-					console.error('Pres_Mode: Using local data instead...')
 					// throw new Error('ServerError');
 				}
 			});

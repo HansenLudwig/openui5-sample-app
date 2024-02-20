@@ -28,7 +28,7 @@ let _main_key_time = JSON.stringify(new Date()).slice(1, -1);
 let _main_key_id = 0;
 
 let global_data_frame = require(datafile_framework);
-const global_data_list = _loadAndParseTodos().todos;
+const global_data_list = require(datafile_units).todos;
 
 app.post('/todoapp', (req, res) =>
 {   /*接收req.body.xxx*/ 
@@ -44,18 +44,21 @@ app.post('/todoapp', (req, res) =>
         case 'add':
             _data = _addData2RAM(params.data);
             break;
+        case 'remove':
+        case 'delete':
         case 'del':
-            _data = _delData(params)
+            _data = _delData(params.data);
             break;
-        case 'completed':
+        case 'change':
+            _data = _changeData(params.data);
             break;
         case 'overwrite':
         case 'over_write':
-            //_data = {Status: 1, Error: 'Access denied.'} // furture: overwrite should no longer be allowed.
-            global_data_frame = params.data;
-            global_data_list = global_data_frame.todos;
-            global_data_frame.todos = [];
-            _data = _saveData("data");
+            _data = {Status: 1, Error: 'Access denied.'} // furture: overwrite should no longer be allowed.
+            //global_data_frame = params.data;
+            //global_data_list = global_data_frame.todos;
+            //global_data_frame.todos = [];
+            //_data = _saveData("data");
             break;
         case 'pre_load':
         case 'pre-load':
@@ -72,7 +75,8 @@ app.post('/todoapp', (req, res) =>
     if (_data.Status) {
         res_data.Status = 400;
         res_data.msg = _data.Error;
-        res_data = _getParsedTodos().Data;
+        res_data.data = global_data_frame;
+        res_data.data.todos = global_data_list;
     } else {
         res_data.Status = 200; // 202; // Accepted indicates that the request has been accepted
                                 // for processing, but the processing has not been completed;
@@ -121,7 +125,7 @@ function _addData2RAM(newTodo)
         global_data_list.push(newTodo);
         if ( _saveData('data').Status ) {
             throw new Error('DataSaveFailed'); }
-        add_return.newId = newTodo.id;
+        add_return.Data = newTodo.id;
         add_return.Status = 0;
     }
     catch (error)
@@ -133,7 +137,7 @@ function _addData2RAM(newTodo)
 }
 
 function _delData(todoIds)
-{   /* Input: todoId = ['Id1', ...Strings]
+{   /* Input: todoIds = [{id:1}, ...Objs]
     Output: return_obj={Status: 0(success)|1(404), Error:'Err msg.'} */
     let i = global_data_list.length;
     const _list_size = todoIds.length;
@@ -141,7 +145,7 @@ function _delData(todoIds)
     while(i--) {
         let j = todoIds.length;
         while(j--) {
-            if(global_data_list[i] === todoIds[j]) {
+            if(global_data_list[i].id === todoIds[j].id) {
                 global_data_list.splice(i, 1);
                 todoIds.splice(j, 1);
                 _flag_finded++;
@@ -150,10 +154,44 @@ function _delData(todoIds)
         }
     }
     if (_flag_finded === _list_size) {
+        _saveData();
         return {Status: 0, Data:[]}; }
     else {
         _missed = String(_list_size - _flag_finded);
-        return {Status: 1, Data:[], Error:_missed+'Element(s) not found.'};}
+        return {Status: 1, Data:todoIds, Error:_missed+'Element(s) not found.'};}
+}
+function _changeData(todoIds)
+{   /* Input todoIds = [{id:1, otherProperty1:'', ...}, ...Objs]
+    Output: return_obj={Status: 0(success)|1(404), Error:'Err msg.'} */
+    const changeProperties = Object.keys(todoIds[0]);
+    const _list_size = todoIds.length;
+    let i = changeProperties.length;
+    let _flag_finded = 0;
+    while(i--){
+        if (changeProperties[i] === 'id') {
+            changeProperties.splice(i, 1);
+            break;  // only 1 'id' in the properties, save some time.
+        }
+    }
+    global_data_list.forEach( (todo) => {
+        let i = todoIds.length
+        while(i--){
+            if (todo.id === todoIds[i].id) {
+                changeProperties.forEach( (_ppt) => {
+                    todo[_ppt] = todoIds[i][_ppt];
+                    todoIds.splice(i, 1);
+                    _flag_finded++;
+                })
+            }
+        }
+    });
+
+    if (_flag_finded === _list_size) {
+        _saveData()
+        return {Status: 0, Data:[]}; }
+    else {
+        _missed = String(_list_size - _flag_finded);
+        return {Status: 1, Data:todoIds, Error:_missed+'Element(s) not found.'};}
 }
 
 function _loadAndParseTodos()  // Only used when Initiating the server.

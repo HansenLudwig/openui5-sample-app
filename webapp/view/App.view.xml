@@ -153,7 +153,7 @@
 										<Text text="{title}">
 											<customData>
 												<core:CustomData key="todo-item-completed"
-													value="{:= String(${completed})}" writeToDom="true" />
+													value="{=: String(${/completed})}" writeToDom="true" />
 											</customData>
 										</Text>
 										<Link
