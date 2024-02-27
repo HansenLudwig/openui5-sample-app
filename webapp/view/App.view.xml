@@ -28,7 +28,7 @@
 									</Select>
 								</FlexBox>
 								<FlexBox justifyContent="Center" alignItems='Center'>
-									<Label text=" DDL: " textAlign="Center" class="sapUiSmallMarginEnd"/>
+									<Label text="DDL: " textAlign="Center" class="sapUiSmallMarginEnd sapUiSmallMarginBegin"/>
 									<DatePicker id='DP1'
 										value="{
 											path:'/newTodo/DDLAtUTC',
