@@ -28,7 +28,7 @@
 									</Select>
 								</FlexBox>
 								<FlexBox justifyContent="Center" alignItems='Center'>
-									<Label text="DDL: " textAlign="Center" class="sapUiSmallMarginEnd"/>
+									<Label text=" DDL: " textAlign="Center" class="sapUiSmallMarginEnd"/>
 									<DatePicker id='DP1'
 										value="{
 											path:'/newTodo/DDLAtUTC',
@@ -46,6 +46,7 @@
 								placeholder="{i18n>INPUT_PLACEHOLDER}"/>
 							<Button id="addTodoItemButton"
 								icon="sap-icon://add-product" text="{i18n>ADD_NEW_TODO_BUTT}"
+								enabled="{= ${/newTodo/title} !== '' }"
 								press=".addTodo"/>
 								<!--  -->
 						</f:DynamicPageHeader>
@@ -59,8 +60,9 @@
 							items="{
 								path: '/todos', events: { change: '.updateItemsLeftCount' } ,
 								sorter: {
-									path:'',
-									descending:true
+									path: 'addedAtUTC',
+									descending:false,
+									group:false
 									}
 								}"
 							mode="None"
@@ -74,18 +76,20 @@
 								<OverflowToolbar id="toolbar" class="sapUiSizeCompact"
 									visible="{= !${view>/isMobile} }">
 									<Title text="{i18n>todoListTitle}"/>
-									<!-- Constructing -->
+									<!-- Sorting and Grouping -->
+									<Label text="sorted by: "/>
 									<Select id="groupingOpt" class="sapUiSizeCompact" 
 									forceSelection="false"
-									selectedKey="{view>/ogpOptions}"
+									selectedKey="{view>/ogpOptions/grpOption}"
 									items="{ 
-										path: 'view>/ogpOptions/OptionCollection',
+										path: 'view>/ogpOptions/groupingOptions',
 										sorter: { path: 'groupingID',
-													descending: true } 
-									}">
-									<!-- End of Constructing -->
-									<core:ListItem key="{view>PriorityID}" text="{view>PriName}" icon="{view>Icon}"
-									class="sapUiSmallMarginEnd"/>
+													descending: false } 
+									}"
+									change=".changeSortingOption">
+									<core:ListItem key="{view>groupingID}" text="{view>groupingName}" icon="{view>Icon}"
+										class="sapUiSmallMarginEnd"/>
+									<!-- End of Sorting and Grouping -->
 									</Select>
 									<ToolbarSpacer/>
 									<SearchField id="searchTodoItemsInput" liveChange=".onSearch"
@@ -153,7 +157,7 @@
 										<Text text="{title}">
 											<customData>
 												<core:CustomData key="todo-item-completed"
-													value="{=: String(${/completed})}" writeToDom="true" />
+													value="{= String(${completed})}" writeToDom="true" />
 											</customData>
 										</Text>
 										<Link
@@ -174,13 +178,12 @@
 											} ">
 												<customData>
 													<core:CustomData key="todo-item-overtime"
-														value="1" writeToDom="true" />
+														value="{= String(${view>/timeNow} > ${DDLAtUTC}) }" writeToDom="true" />
 												</customData>
 											</Text>
 										</FlexBox>
 									</VBox>
 								</HBox>
-									
 							</CustomListItem>
 						</List>
 					</f:content>

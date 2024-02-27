@@ -1,6 +1,11 @@
+/*Attention: property's name MUST be 100% matched to make it work*/
 /* Strikes through the completed items */
 div span[data-todo-item-completed="true"] {
 	text-decoration: line-through;
+}
+
+div span[data-todo-item-overtime="true"] {
+	color: red;
 }
 
 div.CustomListItemPriority span {

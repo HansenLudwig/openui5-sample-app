@@ -63,7 +63,7 @@ app.post('/todoapp', (req, res) =>
         case 'pre_load':
         case 'pre-load':
             _data.Status = 0;
-            _data.Data = global_data_frame;
+            _data.Data = Object.assign({}, global_data_frame);
             _data.Data.todos = global_data_list;
             break;
         case 'ask':

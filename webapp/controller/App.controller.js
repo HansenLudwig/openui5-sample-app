@@ -6,9 +6,10 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/unified/DateTypeRange",
 	"sap/ui/core/date/UI5Date",
+    "sap/ui/model/Sorter",
 	'../model/formatter',
 	'../model/prioritylist'
-], (Device, Controller, Filter, FilterOperator, JSONModel, DateTypeRange, UI5Date, formatter, prioritylist) => {
+], (Device, Controller, Filter, FilterOperator, JSONModel, DateTypeRange, UI5Date, Sorter, formatter, prioritylist) => {
 	"use strict";
 
 	return Controller.extend("sap.ui.demo.todo.controller.App", {
@@ -19,7 +20,6 @@ sap.ui.define([
 			let oModel = new JSONModel();
 			
 			const oOptions = {
-				"SelectedOption": "Normal(Default)",
 				"OptionCollection": [
 					{
 						"PriorityID": "5",
@@ -49,23 +49,12 @@ sap.ui.define([
 				]
 			};
 			const ogpOptions = {
-				OptionCollection: [
-					{
-						groupingID: '1',
-						groupingName: 'Priority'
-					},
-					{
-						groupingID: '2',
-						groupingName: 'Added'
-					},
-					{
-						groupingID: '3',
-						groupingName: 'DDL'
-					},
-					{
-						groupingID: '4',
-						groupingName: 'HashTag'
-					}
+				grpOption: '1',
+				groupingOptions: [
+					{ groupingID: '1', groupingName: 'Added' },
+					{ groupingID: '2', groupingName: 'Priority' },
+					{ groupingID: '3', groupingName: 'DDL' },
+					{ groupingID: '4', groupingName: 'HashTag' }
 				]
 			};
 
@@ -75,17 +64,31 @@ sap.ui.define([
 
 			oModel.setData({
 				isMobile: Device.browser.mobile,
+				timeNow: new Date(),
 				selectOptions: oOptions,	// prioritylist
-				//valueDP1: UI5Date.getInstance(),
-				ogpOptions: ogpOptions,
+				ogpOptions: ogpOptions,		// sorter
 				filterText: undefined
 			});
 
-			this.getView().setModel(oModel, 'view');
-			this.getView().getModel().setProperty("/default_newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1));
-			this.getView().getModel().setProperty("/newTodo/DDLAtUTC", JSON.stringify(UI5Date.getInstance()).slice(1,-1));
-			
+			this.getView().setModel(oModel, 'view');			
 			this._front2server('pre_load');
+		},
+
+		changeSortingOption(oEvent) {
+			const oModel = this.getView().getModel();
+			const _sorterPresets = [{sPath:'', bDescending:false, vGroup:false},
+				{sPath:'addedAtUTC', bDescending:false, vGroup:false},
+				{sPath:'priority', bDescending:true, vGroup:true},
+				{sPath:'DDLAtUTC', bDescending:false, vGroup:false},
+				{sPath:'hashTag', bDescending:false, vGroup:true},
+			];
+			const _aSorter = this.byId('todoList').getBinding('items').aSorters[0]
+			const _last_selection = parseInt(oEvent.getParameters().previousSelectedItem.mProperties.key);
+			const _this_selection = parseInt(oEvent.getParameters().selectedItem.mProperties.key);
+			_aSorter.sPath = _sorterPresets[_this_selection].sPath;
+			_aSorter.bDescending=_sorterPresets[_this_selection].bDescending;
+			_aSorter.vGroup=_sorterPresets[_this_selection].vGroup;
+			this._applyListFilters();
 		},
 
 		/**
@@ -93,12 +96,9 @@ sap.ui.define([
 		 */
 		addTodo() {
 			const oModel = this.getView().getModel();
-			if(!oModel.getProperty("/newTodo/title"))
-			{
-				return
-			}
 			
 			const aTodos = oModel.getProperty('/todos').map((oTodo) => Object.assign({}, oTodo));
+			//
 
 			const newTodo = oModel.getProperty("/newTodo")
 			const defaultNewTodo = oModel.getProperty("/default_newTodo")
@@ -108,7 +108,7 @@ sap.ui.define([
 			}
 			const newTodoTitle = newTodo.title.substring(0, newTodoHashTagIdx)
 			const newTodoHashTag = newTodo.title.substring(newTodoHashTagIdx)
-			const newTodoDDL = Date(newTodo.DDLAtUTC)	// Questionable...
+			const newTodoDDL = newTodo.DDLAtUTC
 			const newTodoObject = {
 				title: newTodoTitle,
 				hashTag: newTodoHashTag,
@@ -129,7 +129,7 @@ sap.ui.define([
 			const aTodos = oModel.getProperty('/todos').map((oTodo) => Object.assign({}, oTodo));
 			const cTodo = aTodos[changed_Checkbox_idx];
 			this._front2server('change', [{id:cTodo.id, completed:cTodo.completed}]);
-			// this._front2server('completed', )
+			this.updateItemsLeftCount();
 		},
 
 		/**
@@ -282,19 +282,6 @@ sap.ui.define([
 			this.getView().getModel("view").setProperty("/filterText", sFilterText);
 		},
 
-		_parseAndSetTodos(_data, struct='data') {
-			
-		},
-
-		_stringifyTodos(todosArr)
-		{	/* Input: todos: Array of Objs
-			 Output: Objs.date -> Date(date) */
-			 todosArr.forEach( (todo) => { 
-				todo.DDLAtUTC = Date(todo.DDLAtUTC);
-				todo.addedAtUTC = Date(todo.addedAtUTC);
-			});
-		},
-
 		_front2server(operation='ask', send_data={}, oParam={})
 		{
 			let fn_return = { Status: 400, data:{}, msg: {} };
@@ -313,14 +300,16 @@ sap.ui.define([
 							const server_data = server_res.data;  // to-be tested: ser_res.data_consistency
 							const server_todos = server_data.todos;
 							server_todos.forEach( (todo) => {
-								todo.DDLAtUTC = Date(todo.DDLAtUTC);
-								todo.addedAtUTC = Date(todo.addedAtUTC);
+								todo.DDLAtUTC = new Date(todo.DDLAtUTC);
+								todo.addedAtUTC = new Date(todo.addedAtUTC);
 							} );
 							this.getView().getModel().setProperty('/todos', server_data.todos);
 							if (operation ==='pre_load' || operation === 'pre-load')
 							{
 								server_data.newTodo.addedAtUTC = new Date();
 								server_data.default_newTodo.addedAtUTC = new Date(); 
+								server_data.newTodo.DDLAtUTC = JSON.stringify(new Date()).slice(1, -1);
+								server_data.default_newTodo.DDLAtUTC = JSON.stringify(new Date()).slice(1, -1);
 								this.getView().getModel().setProperty('/default_newTodo', server_data.default_newTodo);
 								this.getView().getModel().setProperty('/newTodo', server_data.newTodo);
 							}
@@ -330,7 +319,8 @@ sap.ui.define([
 							// {oModel, aTodos, defaultNewTodo}
 							const oModel = oParam.oModel;
 							send_data.id = server_res.data;
-							send_data.addedAtUTC = Date(send_data.addedAtUTC);
+							send_data.addedAtUTC = new Date(send_data.addedAtUTC);
+							send_data.DDLAtUTC = new Date(send_data.DDLAtUTC)
 							oParam.aTodos.push(send_data);
 							oModel.setProperty('/todos', oParam.aTodos);
 							oModel.setProperty('/newTodo', oParam.defaultNewTodo);
